@@ -28,6 +28,9 @@ import { SummaryCardComponent } from "../../../components/summary-card/summary-c
 import { FormsModule } from '@angular/forms';
 import { joinPaths } from 'src/app/utils/path.utils';
 import { ButtonComponent } from "../../../components/core/button/button.component";
+import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import { TestCaseExportStrategy } from '../../../services/export/strategies/test-case-export.strategy';
 
 interface IPrdInfo {
   id: string;
@@ -61,7 +64,8 @@ interface SummaryCardData {
     AppSelectComponent,
     FormsModule,
     ButtonComponent,
-    NgIcon
+    NgIcon,
+    ExportDropdownComponent
 ],
   providers: [
     provideIcons({
@@ -130,6 +134,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     private toast: ToasterService,
     private appSystemService: AppSystemService,
     private route: ActivatedRoute,
+    private testCaseExportStrategy: TestCaseExportStrategy,
   ) {
   }
   
@@ -423,4 +428,114 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  
+  exportOptions: DropdownOptionGroup[] = [
+        {
+          groupName: 'Export',
+          options: [
+            //  {
+            //   label: 'Copy to Clipboard',
+            //   callback: () => this.exportTestCases('json'),
+            //   icon: 'heroPaperClip',
+            //   additionalInfo: 'JSON Format',
+            //   isTimestamp: false,
+            // },
+            {
+              label: 'Download',
+              callback: () => {
+                this.exportTestCases('xlsx');
+              },
+              icon: 'heroDocumentText',
+              additionalInfo: 'Excel (.xlsx)',
+              isTimestamp: false,
+            },
+          ],
+        },
+    ];
+
+  getExportOptions(): DropdownOptionGroup[] {
+    return this.exportOptions;
+  }
+    async exportTestCases(format: string) {
+      if (this.userStories.length === 0) {
+        this.toast.showError('No user stories found');
+        return;
+      }
+  
+      try {
+        const allTestCaseContents: any[] = [];
+        const skippedUserStories: string[] = [];
+  
+        for (const userStory of this.userStories) {
+          try {
+            const testCasePath = joinPaths(this.currentProject, REQUIREMENT_TYPE.TC, userStory.id);
+            let files: string[] = [];
+            
+            try {
+              files = await this.appSystemService.getFolders(testCasePath, FILTER_STRINGS.BASE, false);
+            } catch (dirError) {
+              this.logger.warn(`No test case directory for user story: ${userStory.id}`, dirError);
+              skippedUserStories.push(userStory.id);
+              continue;
+            }
+            
+            if (files && files.length > 0) {
+              const testCaseContents = await Promise.all(
+                files.map(async (fileName: string) => {
+                  const fullPath = joinPaths(this.currentProject, REQUIREMENT_TYPE.TC, userStory.id, fileName);
+                  
+                  try {
+                    const content = await this.appSystemService.readFile(fullPath);
+                    const parsedContent = JSON.parse(content);
+                    
+                    parsedContent.us_id = userStory.id;
+                    parsedContent.us_name = userStory.name;
+                    parsedContent.prd_id = userStory.prdId || '';
+
+                    return {
+                      folderName: REQUIREMENT_TYPE.TC,
+                      fileName: fullPath,
+                      content: parsedContent
+                    };
+                  } catch (fileError) {
+                    this.logger.warn(`Error reading test case file: ${fullPath}`, fileError);
+                    return null;
+                  }
+                })
+              );
+  
+              const validTestCaseContents = testCaseContents.filter(tc => tc !== null);
+              allTestCaseContents.push(...validTestCaseContents);
+            }
+          } catch (userStoryError) {
+            this.logger.warn(`Error processing user story: ${userStory.id}`, userStoryError);
+            skippedUserStories.push(userStory.id);
+          }
+        }
+  
+        if (allTestCaseContents.length === 0) {
+          this.toast.showError('No test cases found to export');
+          return;
+        }
+  
+        if (skippedUserStories.length > 0) {
+          this.toast.showWarning(`Skipped test cases for user stories: ${skippedUserStories.join(', ')}`);
+        }
+
+        const exportResult = await this.testCaseExportStrategy.export(
+          allTestCaseContents, 
+          { 
+            format: format as ExportFileFormat, 
+            projectName: this.currentProject 
+          }
+        );
+  
+        if (!exportResult.success) {
+          this.toast.showError('Failed to export test cases');
+        }
+      } catch (error) {
+        this.logger.error('Error exporting test cases:', error);
+        this.toast.showError('Failed to export test cases');
+      }
+    }
 }

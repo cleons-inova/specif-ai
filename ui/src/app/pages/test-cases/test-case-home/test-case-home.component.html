@@ -2,18 +2,26 @@
   class="bg-white border rounded-lg p-5 flex flex-col h-full lg:col-span-2 w-full"
 >
   <div class="mb-4">
-    <div class="flex items-center mt-2 justify-between">
-      <div class="flex flex-col gap-2 min-w-0">
-        <h1
-          class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8 flex items-center"
-        >
-          Test Cases
-            <ng-icon
-              name="heroInformationCircle"
-              (click)="electronService.openExternalUrl(docUrl)"
-              class="cursor-pointer ml-1 hover:text-secondary-500"
-            ></ng-icon>
-        </h1>
+    <div class="flex items-center mt-2 w-full">
+      <div class="flex flex-col gap-2 min-w-0 w-full">
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center flex-grow">
+            <h1 class="text-lg font-bold text-secondary-800 truncate max-w-full pr-8">
+              Test Cases
+              <ng-icon
+                name="heroInformationCircle"
+                (click)="electronService.openExternalUrl(docUrl)"
+                class="cursor-pointer ml-1 hover:text-secondary-500"
+              ></ng-icon>
+            </h1>
+          </div>
+          <div class="flex-shrink-0">
+            <app-export-dropdown
+              [disabled]="getTotalTestCases() === 0"
+              [groupedOptions]="getExportOptions()"
+            />
+          </div>
+        </div>
 
         <div class="flex items-center">
           <h2 class="text-md font-semibold text-secondary-600">User Stories</h2>

@@ -11,7 +11,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { Store } from '@ngxs/store';
 import { ProjectsState } from '../../../store/projects/projects.state';
-import { ArchiveFile, ReadFile } from '../../../store/projects/projects.actions';
+import { ArchiveFile, ExportRequirementData, ReadFile, BulkReadFiles, ClearBRDPRDState } from '../../../store/projects/projects.actions';
 import { UserStoriesState } from '../../../store/user-stories/user-stories.state';
 import { SetSelectedUserStory } from '../../../store/user-stories/user-stories.actions';
 import { RequirementIdService } from '../../../services/requirement-id.service';
@@ -30,13 +30,15 @@ import {
   FILTER_STRINGS,
   REQUIREMENT_TYPE,
   TOASTER_MESSAGES,
-  SPECIFAI_REQ_DOCS
+  SPECIFAI_REQ_DOCS,
+  FOLDER_REQUIREMENT_TYPE_MAP,
+  FOLDER
 } from '../../../constants/app.constants';
 import { SearchInputComponent } from '../../../components/core/search-input/search-input.component';
 import { BehaviorSubject, combineLatest, firstValueFrom, map, Subject, take, takeUntil } from 'rxjs';
 import { AppSelectComponent, SelectOption } from '../../../components/core/app-select/app-select.component';
 import { TestCaseContextModalComponent } from 'src/app/components/test-case-context-modal/test-case-context-modal.component';
-import { ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
+import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import {
   WorkflowType,
   WorkflowProgressEvent,
@@ -60,6 +62,7 @@ import { WorkflowProgressService } from 'src/app/services/workflow-progress/work
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
+import { ExportFileFormat } from 'src/app/constants/export.constants';
 
 @Component({
   selector: 'app-test-case-list',
@@ -937,19 +940,93 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
       });
   }
 
-  exportOptions = [
-    {
-      label: 'Copy JSON to Clipboard',
-      callback: () => this.exportTestCases('json'),
-    },
-    {
-      label: 'Download as Excel (.xlsx)',
-      callback: () => this.exportTestCases('xlsx'),
-    },
-  ];
+  // exportOptions = [
+  //   {
+  //     label: 'Copy JSON to Clipboard',
+  //     callback: () => this.exportTestCases('json'),
+  //   },
+  //   {
+  //     label: 'Download as Excel (.xlsx)',
+  //     callback: () => this.exportTestCases('xlsx'),
+  //   },
+  // ];
+    exportOptions: DropdownOptionGroup[] = [
+      {
+        groupName: 'Export',
+        options: [
+          // {
+          //   label: 'Copy to Clipboard',
+          //   callback: () => this.exportTestCases('json'),
+          //   icon: 'heroPaperClip',
+          //   additionalInfo: 'JSON Format',
+          //   isTimestamp: false,
+          // },
+          {
+            label: 'Download',
+            callback: () => this.exportTestCases('xlsx'),
+            icon: 'heroDocumentText',
+            additionalInfo: 'Excel (.xlsx)',
+            isTimestamp: false,
+          },
+        ],
+      },
+    ];
+    getExportOptions = () => {
+      return this.exportOptions;
+    }
+  async exportTestCases(format: string) {
+    if (!this.userStoryId) {
+      this.toast.showError('No user story selected');
+      return;
+    }
 
-  exportTestCases(format: string) {
-    // Implementation for exporting test cases
+    try {
+      const testCasePath = joinPaths(this.currentProject, REQUIREMENT_TYPE.TC, this.userStoryId);
+      const files = await this.appSystemService.getFolders(testCasePath, FILTER_STRINGS.BASE, false);
+      
+      if (!files || files.length === 0) {
+        this.toast.showError('No test cases found to export');
+        return;
+      }
+
+      const testCaseContents = await Promise.all(
+        files.map(async (fileName: string) => {
+          const content = await this.appSystemService.readFile(
+            joinPaths(this.currentProject, REQUIREMENT_TYPE.TC, this.userStoryId, fileName)
+          );
+          const parsedContent = JSON.parse(content);
+          
+          parsedContent.us_id = this.navigation.userStoryInfo.id || this.userStoryId;
+          parsedContent.prd_id = this.navigation.prdInfo.prdId || '';
+
+          return {
+            folderName: REQUIREMENT_TYPE.TC,
+            fileName,
+            content: parsedContent
+          };
+        })
+      );
+
+      await firstValueFrom(this.store.dispatch(new ClearBRDPRDState()));
+
+      const state = this.store.snapshot();
+      await this.store.reset({
+        ...state,
+        projects: {
+          ...state.projects,
+          selectedFileContents: testCaseContents
+        }
+      });
+
+      await firstValueFrom(this.store.dispatch(
+        new ExportRequirementData(REQUIREMENT_TYPE.TC, {
+          type: format as ExportFileFormat,
+        }),
+      ));
+    } catch (error) {
+      this.logger.error('Error exporting test cases:', error);
+      this.toast.showError('Failed to export test cases');
+    }
   }
 
   setupWorkflowProgressListener() {

@@ -11,6 +11,7 @@ import { UIRExportStrategy } from './strategies/uir-export.strategy';
 import { AppSystemService } from '../app-system/app-system.service';
 import { ClipboardService } from '../clipboard.service';
 import { UserStoriesExportStrategy } from './strategies/user-stories-export.strategy';
+import { TestCaseExportStrategy } from './strategies/test-case-export.strategy';
 
 @Injectable({
   providedIn: 'root',
@@ -65,6 +66,13 @@ export class RequirementExportStrategyManager {
       }
       case REQUIREMENT_TYPE.US: {
         return new UserStoriesExportStrategy(
+          this.exportService,
+          this.logger,
+          this.clipboardService,
+        );
+      }
+      case REQUIREMENT_TYPE.TC: {
+        return new TestCaseExportStrategy(
           this.exportService,
           this.logger,
           this.clipboardService,
