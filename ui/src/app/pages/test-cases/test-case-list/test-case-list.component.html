@@ -47,10 +47,10 @@
           />
         </div>
         <!-- TODO export feature -->
-        <!-- <app-export-dropdown
+        <app-export-dropdown
           [disabled]="testCases.length === 0"
-          [options]="exportOptions"
-        /> -->
+          [groupedOptions]="getExportOptions()"
+        />
       </div>
     </div>
 
