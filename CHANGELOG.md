@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.8.2]
+
+### Enhancements
+
+- Added Export feature for Testcases
+
+### Fixed
+
+- Resolved the limitation that fetched only 50 stories and tasks per epic.
+- Migrated JIRA API usage from deprecated /rest/api/3/search to /rest/api/3/search/jql
+  Fixed pagination handling to ensure consistent data retrieval and compatibility
+
 ## [2.8.1]
 
 ### Enhancements
@@ -24,6 +36,7 @@
 - Added Inline Editor functionality for all requirements to support quick, selection-context editing.
 
 ### Enhancements
+
 - Refactored to securely persist JIRA/ADO credentials in Electron Store instead of metadata.
 - Enhanced HAI Chat to fully replace requirement text with structured AI suggestions, enabling clearer edits and reducing hallucinations during refinement.
 - Updated Jira integration to follow a modal-based workflow similar to ADO, with precise ticket-level Pull/Push controls for a consistent user experience.
