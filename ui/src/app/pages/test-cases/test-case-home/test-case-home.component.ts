@@ -433,13 +433,6 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
         {
           groupName: 'Export',
           options: [
-            //  {
-            //   label: 'Copy to Clipboard',
-            //   callback: () => this.exportTestCases('json'),
-            //   icon: 'heroPaperClip',
-            //   additionalInfo: 'JSON Format',
-            //   isTimestamp: false,
-            // },
             {
               label: 'Download',
               callback: () => {
