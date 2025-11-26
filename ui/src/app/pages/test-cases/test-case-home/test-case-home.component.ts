@@ -464,13 +464,13 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
             const testCasePath = joinPaths(this.currentProject, REQUIREMENT_TYPE.TC, userStory.id);
             let files: string[] = [];
             
-            try {
-              files = await this.appSystemService.getFolders(testCasePath, FILTER_STRINGS.BASE, false);
-            } catch (dirError) {
-              this.logger.warn(`No test case directory for user story: ${userStory.id}`, dirError);
-              skippedUserStories.push(userStory.id);
-              continue;
-            }
+              if(await this.appSystemService.fileExists(testCasePath)){
+                files = await this.appSystemService.getFolders(testCasePath, FILTER_STRINGS.BASE, false);
+              }
+              else{
+                skippedUserStories.push(userStory.id);
+                continue;
+              }
             
             if (files && files.length > 0) {
               const testCaseContents = await Promise.all(
