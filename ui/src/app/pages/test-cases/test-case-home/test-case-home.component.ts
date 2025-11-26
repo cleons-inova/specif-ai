@@ -28,7 +28,7 @@ import { SummaryCardComponent } from "../../../components/summary-card/summary-c
 import { FormsModule } from '@angular/forms';
 import { joinPaths } from 'src/app/utils/path.utils';
 import { ButtonComponent } from "../../../components/core/button/button.component";
-import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 import { DropdownOptionGroup, ExportDropdownComponent } from 'src/app/export-dropdown/export-dropdown.component';
 import { TestCaseExportStrategy } from '../../../services/export/strategies/test-case-export.strategy';
 
@@ -436,7 +436,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
             {
               label: 'Download',
               callback: () => {
-                this.exportTestCases('xlsx');
+                this.exportTestCases(EXPORT_FILE_FORMATS.EXCEL);
               },
               icon: 'heroDocumentText',
               additionalInfo: 'Excel (.xlsx)',
