@@ -67,7 +67,6 @@ export class TestCaseExportStrategy implements ExportStrategy {
   }
 
   private transformData(data: IList[]): FormattedTestCase[] {
-    console.log(data);
     return data.map(item => {
       const content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content;
       const fileName = item.fileName;
