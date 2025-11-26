@@ -62,7 +62,7 @@ import { WorkflowProgressService } from 'src/app/services/workflow-progress/work
 import { heroArrowRight } from '@ng-icons/heroicons/outline';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { RequirementTypeEnum } from 'src/app/model/enum/requirement-type.enum';
-import { ExportFileFormat } from 'src/app/constants/export.constants';
+import { EXPORT_FILE_FORMATS, ExportFileFormat } from 'src/app/constants/export.constants';
 
 @Component({
   selector: 'app-test-case-list',
@@ -946,7 +946,7 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
         options: [
           {
             label: 'Download',
-            callback: () => this.exportTestCases('xlsx'),
+            callback: () => this.exportTestCases(EXPORT_FILE_FORMATS.EXCEL),
             icon: 'heroDocumentText',
             additionalInfo: 'Excel (.xlsx)',
             isTimestamp: false,
