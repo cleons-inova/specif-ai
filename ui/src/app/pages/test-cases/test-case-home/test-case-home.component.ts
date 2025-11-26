@@ -512,7 +512,7 @@ export class TestCaseHomeComponent implements OnInit, OnDestroy {
         }
   
         if (skippedUserStories.length > 0) {
-          this.toast.showWarning(`Skipped test cases for user stories: ${skippedUserStories.join(', ')}`);
+          this.toast.showWarning(`No test cases found for user stories: ${skippedUserStories.join(', ')}`);
         }
 
         const exportResult = await this.testCaseExportStrategy.export(
