@@ -939,28 +939,11 @@ export class TestCaseListComponent implements OnInit, OnDestroy {
         }
       });
   }
-
-  // exportOptions = [
-  //   {
-  //     label: 'Copy JSON to Clipboard',
-  //     callback: () => this.exportTestCases('json'),
-  //   },
-  //   {
-  //     label: 'Download as Excel (.xlsx)',
-  //     callback: () => this.exportTestCases('xlsx'),
-  //   },
-  // ];
+  
     exportOptions: DropdownOptionGroup[] = [
       {
         groupName: 'Export',
         options: [
-          // {
-          //   label: 'Copy to Clipboard',
-          //   callback: () => this.exportTestCases('json'),
-          //   icon: 'heroPaperClip',
-          //   additionalInfo: 'JSON Format',
-          //   isTimestamp: false,
-          // },
           {
             label: 'Download',
             callback: () => this.exportTestCases('xlsx'),
