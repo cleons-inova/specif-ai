@@ -70,6 +70,9 @@ logs/
 /electron/ui/
 .electron-vue/
 release/
+docs/yarn.lock
+electron/package-lock.json
+ui/package-lock.json
 
 # Large media files
 *.tiff
