@@ -6,7 +6,7 @@
   "main": "build/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rm -rf build",
+    "clean": "rimraf build",
     "check": "tsc --noEmit",
     "build": "npm run clean && npm run check && tsc --pretty --listEmittedFiles",
     "start": "npm run build && electron .",
@@ -14,8 +14,8 @@
     "package:mac": "electron-builder build -m --arm64 --x64 --publish=never",
     "package:win": "electron-builder build -w --x64 --ia32 --publish=never",
     "serve:electron": "electron .",
-    "build:ui": "rm -rf ui && cd ../ui && npm run build:dev && cp -r ./dist/ui ../electron/ui/",
-    "build-watch:ui": "rm -rf ui && mkdir ui && cd ../ui && npm run watch:dev",
+    "build:ui": "rimraf ui && cd ../ui && npm run build:dev && cp -r ./dist/ui ../electron/ui/",
+    "build-watch:ui": "rimraf ui && mkdir ui && cd ../ui && npm run watch:dev",
     "watch:ui": "concurrently \"npm run build-watch:ui\" \"onchange '../ui/dist/**/*' -- cp -r ../ui/dist/* ./\""
   },
   "engines": {
